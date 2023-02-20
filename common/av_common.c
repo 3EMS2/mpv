@@ -369,6 +369,7 @@ static void resolve_positional_arg(void *avobj, char **name)
 // Returns: >=0 success, <0 failed to set an option
 int mp_set_avopts(struct mp_log *log, void *avobj, char **kv)
 {
+	mp_err(log, "AVOption set\n");
     return mp_set_avopts_pos(log, avobj, avobj, kv);
 }
 

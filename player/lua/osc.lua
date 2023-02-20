@@ -61,8 +61,8 @@ local user_opts = {
 opt.read_options(user_opts, "osc", function(list) update_options(list) end)
 
 local osc_param = { -- calculated by osc_init()
-    playresy = 0,                           -- canvas size Y
-    playresx = 0,                           -- canvas size X
+    playresy = 1280,                           -- canvas size Y
+    playresx = 720,                           -- canvas size X
     display_aspect = 1,
     unscaled_y = 0,
     areas = {},
@@ -859,6 +859,9 @@ function render_elements(master_ass)
                 buttontext = string.format("{\\fscx%f}",
                     (maxchars/#buttontext)*100) .. buttontext
             end
+            --if (n == "test") then
+            	--show_message(buttontext)
+            --end
 
             elem_ass:append(buttontext)
         end
@@ -1145,6 +1148,7 @@ function window_controls(topbar)
                  get_align(1 - (2 * user_opts.deadzonesize),
                  osc_param.playresy - (wc_geo.y + (wc_geo.h / 2)), 0, 0)
     add_area("showhide_wc", wc_geo.x, sh_area_y0, wc_geo.w, sh_area_y1)
+    --add_area("showhide_wc", 0, 0, 3840, 2160)
 
     if topbar then
         -- The title is already there as part of the top bar
@@ -1228,7 +1232,8 @@ layouts["box"] = function ()
             get_align(1 - (2*user_opts.deadzonesize),
             osc_param.playresy - (posY + (osc_geo.h / 2)), 0, 0)
     end
-    add_area("showhide", 0, sh_area_y0, osc_param.playresx, sh_area_y1)
+    --add_area("showhide", 0, sh_area_y0, osc_param.playresx, sh_area_y1)
+    add_area("showhide", get_hitbox_coords(posX, posY, 5, osc_geo.w, osc_geo.h))
 
     -- fetch values
     local osc_w, osc_h, osc_r, osc_p =
@@ -1281,6 +1286,11 @@ layouts["box"] = function ()
     lo = add_layout("playpause")
     lo.geometry =
         {x = posX, y = bigbtnrowY, an = 5, w = 40, h = 40}
+    lo.style = osc_styles.bigButtons
+
+    lo = add_layout("test")
+    lo.geometry =
+        {x = 0, y = 0, an = 5, w = 40, h = 40}
     lo.style = osc_styles.bigButtons
 
     lo = add_layout("skipback")
@@ -1336,6 +1346,13 @@ layouts["box"] = function ()
     lo.slider.stype = user_opts["seekbarstyle"]
     lo.slider.rtype = user_opts["seekrangestyle"]
 
+    lo = add_layout("brbar")
+    lo.geometry =
+        {x = posX, y = posY+pos_offsetY-44, an = 2, w = pos_offsetX*2, h = 15}
+    lo.style = osc_styles.timecodes
+    lo.slider.tooltip_style = osc_styles.vidtitle
+    --lo.slider.stype = user_opts["seekbarstyle"]
+    --lo.slider.rtype = user_opts["seekrangestyle"]
     --
     -- Timecodes + Cache
     --
@@ -1399,7 +1416,8 @@ layouts["slimbox"] = function ()
             get_align(1 - (2*user_opts.deadzonesize),
             osc_param.playresy - (posY + (osc_geo.h / 2)), 0, 0)
     end
-    add_area("showhide", 0, sh_area_y0, osc_param.playresx, sh_area_y1)
+    --add_area("showhide", 0, sh_area_y0, osc_param.playresx, sh_area_y1)
+    add_area("showhide", get_hitbox_coords(posX, posY, 5, osc_geo.w, osc_geo.h))
 
     local lo
 
@@ -1436,6 +1454,17 @@ layouts["slimbox"] = function ()
     lo.slider.tooltip_style = styles.tooltip
     lo.slider.stype = user_opts["seekbarstyle"]
     lo.slider.rtype = user_opts["seekrangestyle"]
+    lo.slider.adjust_tooltip = false
+
+    lo = add_layout("brbar")
+    lo.geometry =
+        {x = posX, y = posY , an = 2, w = inner_w, h = ele_h}
+    lo.style = osc_styles.timecodes
+    lo.slider.border = 0
+    lo.slider.gap = 1.5
+    lo.slider.tooltip_style = styles.tooltip
+    --lo.slider.stype = user_opts["seekbarstyle"]
+    --lo.slider.rtype = user_opts["seekrangestyle"]
     lo.slider.adjust_tooltip = false
 
     --
@@ -1514,13 +1543,15 @@ function bar_layout(direction)
         osc_geo.y = osc_geo.y + osc_param.playresy
     end
 
+    local line0 = osc_geo.y - direction * (-100 + padY)
     local line1 = osc_geo.y - direction * (9 + padY)
     local line2 = osc_geo.y - direction * (36 + padY)
 
     osc_param.areas = {}
 
-    add_area("input", get_hitbox_coords(osc_geo.x, osc_geo.y, osc_geo.an,
-                                        osc_geo.w, osc_geo.h))
+    --add_area("input", get_hitbox_coords(osc_geo.x, osc_geo.y, osc_geo.an,
+                                        --osc_geo.w, osc_geo.h))
+    add_area("input", 0, 0, osc_param.playresx, osc_param.playresy)
 
     local sh_area_y0, sh_area_y1
     if direction > 0 then
@@ -1535,7 +1566,8 @@ function bar_layout(direction)
                                osc_geo.y - (osc_geo.h / 2), 0, 0)
         sh_area_y1 = osc_param.playresy - user_opts.barmargin
     end
-    add_area("showhide", 0, sh_area_y0, osc_param.playresx, sh_area_y1)
+    --add_area("showhide", 0, sh_area_y0, osc_param.playresx, sh_area_y1)
+    add_area("showhide", 0, 0, osc_param.playresx, osc_param.playresy)
 
     local lo, geo
 
@@ -1581,6 +1613,12 @@ function bar_layout(direction)
         osc_styles.vidtitleBar,
         geo.x, geo.y-geo.h, geo.w, geo.y+geo.h)
 
+
+    geo = { x = 0, y = 0, an = 4,
+            w = buttonW, h = 36 - padY*2}
+    lo = add_layout("test")
+    lo.geometry = geo
+    lo.style = osc_styles.smallButtonsBar
 
     -- Playback control buttons
     geo = { x = osc_geo.x + padX + padwc_l, y = line2, an = 4,
@@ -1668,6 +1706,16 @@ function bar_layout(direction)
     lo.slider.tooltip_an = 5
     lo.slider.stype = user_opts["seekbarstyle"]
     lo.slider.rtype = user_opts["seekrangestyle"]
+
+    --lo = add_layout("brbar")
+    --lo.geometry = geo
+    --lo.style = osc_styles.timecodesBar
+    --lo.slider.border = 0
+    --lo.slider.gap = 2
+    --lo.slider.tooltip_style = osc_styles.timePosBar
+    --lo.slider.tooltip_an = 5
+    --lo.slider.stype = user_opts["seekbarstyle"]
+    --lo.slider.rtype = user_opts["seekrangestyle"]
 
     if direction < 0 then
         osc_param.video_margins.b = osc_geo.h / osc_param.playresy
@@ -1856,8 +1904,65 @@ function osc_init()
             return ("\238\128\130")
         end
     end
+
     ne.eventresponder["mbtn_left_up"] =
         function () mp.commandv("cycle", "pause") end
+
+    ne = new_element("test", "button")
+
+    ne.content = function ()
+        if mp.get_property("pause") == "yes" then
+            return ("\238\132\129")
+        else
+            return ("\238\128\130")
+        end
+    end
+    ne.content = function ()
+        if (state.fullscreen) then
+            --show_message("\238\132\137blah")
+            return ("\238\132\137")
+        else
+            --show_message("\238\132\136blah")
+            return ("\238\132\136")
+        end
+    end
+    ne.eventresponder["mbtn_left_up"] =
+        --function () mp.commandv("set", "brightness", "-99") end
+        function () 
+	mp.commandv("set","vd-lavc-o", "brightness=2000")
+         --mp.commandv("set" ,"avopts", "brightness=2000")
+--update_options(list)
+ --update_options()
+    --request_tick()
+        msg.warn("Using \"slider\" seekrangestyle together with \"bar\" seekbarstyle is not supported" .. mp.get_property("options/vd-lavc-o"))
+--mp.register_event("property-change", property_change)
+--mp.register_event("property-change", property_change)
+        --msg.warn("Using \"slider\" seekrangestyle together with \"bar\" seekbarstyle is not supported" .. mp.get_opt("brightness"))
+ end
+
+    --ne = new_element("brbar", "slider")
+
+    --ne.enabled = true
+    --ne.slider.min.value = -99
+    --ne.slider.max.value =  99
+    --state.slider_element = ne.enabled and ne or nil  -- used for forced_title
+    --ne.slider.markerF = function ()
+	--mp.commandv("set", "brightness", "-99")
+        --local duration = mp.get_property_number("duration", nil)
+        --if not (duration == nil) then
+            --local chapters = mp.get_property_native("chapter-list", {})
+            --local markers = {}
+            --for n = 1, #chapters do
+                --markers[n] = (chapters[n].time / duration * 100)
+            --end
+            --return markers
+        --else
+            --return {}
+        --end
+    --end
+
+    --ne.eventresponder["mbtn_left_up"] =
+        --function () mp.commandv("cycle", "pause") end
 
     --skipback
     ne = new_element("skipback", "button")
